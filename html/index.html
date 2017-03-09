@@ -1,0 +1,92 @@
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><title>Introduction on Kubernetes</title><meta name="generator" content="Hovercraft! 1.0 http://regebro.github.com/hovercraft"></meta><meta name="author" content="Torello Querci"></meta><meta name="description" content="Introduction on Kubernetes realized for Florence's GDG during Google Cloud Next Extended."></meta><meta name="keywords" content="presentation, kubernetes, GDG, introduction"></meta><link rel="stylesheet" href="css/hovercraft.css" media="all"></link><link rel="stylesheet" href="css/impressConsole.css" media="all"></link><link rel="stylesheet" href="css/highlight.css" media="all"></link><link rel="stylesheet" href="hovercraft.css" media="screen,projection"></link></head><body class="impress-not-supported"><div id="impress"><div class="step step-level-1" step="0" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="0" data-y="0" data-z="0"><h1 id="introduction-on-kubernetes">Introduction on Kubernetes</h1><p>Torello Querci</p><p>June 2016</p><p><a href="mailto:tquerci@gmail.com">tquerci@gmail.com</a></p><p><a href="http://www.torosoft.com/kubernetes2017/">http://www.torosoft.com/kubernetes2017/</a></p><p><a href="https://github.com/mk8/presentation-kubernetes-2017/">https://github.com/mk8/presentation-kubernetes-2017/</a></p></div><div class="step step-level-1" step="1" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="1600" data-y="0" data-z="0"><h1 id="agenda">Agenda</h1><ul><li>Virtualization</li><li>Linux Containers</li><li>What Kubernetes add to containers</li><li>Q&amp;A</li></ul></div><div class="step step-level-1" step="2" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="3200" data-y="0" data-z="0"><h1 id="virtualization-types">Virtualization types</h1><ul><li>Full virtualization (qemu, VirtualBox, VMWare, HyperV, ...)</li><li>Paravirtualization (Xen)</li><li>Containers (LXC, Docker, rkt, LXD, ...)</li></ul></div><div class="step step-level-1" step="3" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="4800" data-y="0" data-z="0"><h1 id="full-virtualization">Full virtualization</h1><p>Full machine have to be virtualized so Guest OS doesn't know that it runs in a virtualized environment.</p><img src="images/full-virtualization.png"></img></div><div class="step step-level-1" step="4" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="6400" data-y="0" data-z="0"><h1 id="paravirtualization">Paravirtualization</h1><p>Guest OS knows it runs as guest so every call attempt to Hardware is routed to Host OS.</p><img src="images/paravirtualization.png"></img></div><div class="step step-level-1" step="5" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="8000" data-y="0" data-z="0"><h1 id="container">Container</h1><p>Container technology creates a "virtual" environment for each App without creating a virtual machine.</p><img src="images/container.png"></img></div><div class="step step-level-1" step="6" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="9600" data-y="0" data-z="0"><h1 id="container-virtualization-without-virtualizator">Container: Virtualization without virtualizator</h1><p>What? A virtualization without virtualizator? How can be possible?</p></div><div class="step step-level-1" step="7" data-x="9600" data-y="1000" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-z="0"><h1 id="behind-the-magic">Behind the magic</h1><ul><li>chroot (file system isolation)</li><li>AppArmor, SELinux (security/access control)</li><li>cgroup (cpu, memory, disk, i/o management - resource management)</li><li>namespace (mnt, pid, net, ipc, userid)</li></ul></div><div class="step step-level-1" step="8" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="9600" data-y="2000" data-z="0"><h1 id="what-can-i-do-with-containers">What can I do with Containers?</h1><p>Containers are a way to create virtual environment for you applications so that your deployment platform can be the same of production environment.</p><p><em>No More library or operating system version conflicts</em></p></div><div class="step step-level-1" step="9" data-x="8000" data-y="2000" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-z="0"><h1 id="docker">Docker</h1><p>Docker containers wrap up a piece of software in a complete filesystem
+that contains everything it needs to run: code, runtime, system tools, system libraries &#x2013; anything you can install on a server.
+This guarantees that it will always run the same, regardless of the environment it is running in. (from Wikipedia)</p></div><div class="step step-level-1" step="10" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="6400" data-y="2000" data-z="0"><pre class="highlight code bash"><span class="c1">#
+# example Dockerfile
+#
+</span>
+FROM tech-stack:v0.0.19
+MAINTAINER tquerci@gmail.com
+EXPOSE 25
+
+<span class="c1"># Copy config files
+</span>ADD main.conf /etc/postfix/main.cf
+
+<span class="c1"># Copy password file
+</span>ADD sasl_passwd.conf /etc/postfix/sasl_passwd
+
+<span class="c1"># Copy wrapper to start postfix and check if it run
+</span>ADD postfix-wrapper.sh /
+
+<span class="c1"># Set mail server name
+</span>RUN <span class="nb">echo</span> <span class="s2">"myorg.com"</span> &gt; /etc/mailname
+
+<span class="c1"># Run password generator
+</span>RUN postmap /etc/postfix/sasl_passwd
+
+<span class="c1"># Start Postfix wrapper server
+</span>CMD /postfix-wrapper.sh</pre></div><div class="step step-level-1" step="11" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="4800" data-y="2000" data-z="0"><h1 id="how-to-use-docker">How to use Docker</h1><p>Build an image from the Dockerfile assign it a name.</p><pre class="highlight code bash">$ docker build -t my_postfix .</pre><p>And run the Postfix server container (in the foreground):</p><pre class="highlight code bash">$ docker run --rm -P --name pf_test my_postfix</pre></div><div class="step step-level-1" step="12" data-rotate-x="0" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="3200" data-y="2000" data-z="0"><h1 id="docker-s-registry">Docker's registry</h1><p>You can store your image in a public or private registry so you can download it from <em>testing</em>, <em>staging</em> or <em>production</em> environments.</p><pre class="highlight code bash">$
+$ docker pull ubuntu:14.04
+$</pre><p>or</p><pre class="highlight code bash">$
+$ docker pull tonistiigi/dnsdock
+$</pre><div class="notes"><p>L'immagine fornisce un DNS da usare all'interno di un docker-compose che &#xE8; una composizione di docker che devono essere eseguiti assieme.
+Come registry di immagini docker possiamo usare sia quay.io che per esempio un docker registri in google cloud.</p></div></div><div class="step step-level-1" step="13" data-x="3200" data-y="3000" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-z="0"><h1 id="kubernetes">Kubernetes</h1><p>What is Kubernetes?</p><ul><li>Kubernetes is a platform for hosting Docker/Rocket containers in a clustered environment</li><li>Provides container grouping, load balancing, auto healing, scaling features</li></ul></div><div class="step step-level-1" step="14" data-x="4800" data-y="3000" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-z="0"><h1 id="key-concepts">Key concepts</h1><ul><li>Master - maintains cluster state and oversees everything</li><li>Node - where your dockers run</li><li>Pod - one or more containers in execution on the same host</li><li>Labels - way to identify pods</li><li>Replication controller - managing replication of pods</li><li>Services - service exposed by pods</li><li>Namespaces - groups all in some ways</li></ul></div><div class="step step-level-1" step="15" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="6400" data-y="3000" data-z="0"><h1 id="master">Master</h1><ul><li>maintains the state of of the cluster</li><li>runs apiserver docker</li><li>processes request</li><li>data persistence with etcd</li><li>monitors pods heath and maintains right number of running pods for every Replication Controller</li></ul></div><div class="step step-level-1" step="16" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="8000" data-y="3000" data-z="0"><h1 id="node">Node</h1><ul><li>where your pods run</li><li>runs proxy to access your services</li><li>caching dockers images</li></ul></div><div class="step step-level-1" step="17" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="9600" data-y="3000" data-z="0"><h1 id="pod">Pod</h1><p>Can be created manually or using json or yaml description file.</p><pre class="highlight code bash">apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80</pre></div><div class="step step-level-1" step="18" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="11200" data-y="3000" data-z="0"><p>multiple dockers can be specified in one pod</p><pre class="highlight code bash">apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-django
+  labels:
+    app: web
+spec:
+  containers:
+    - name: key-value-store
+      image: redis
+      ports:
+        - containerPort: 6379
+    - name: frontend
+      image: django
+      ports:
+        - containerPort: 8000</pre></div><div class="step step-level-1" step="19" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="12800" data-y="3000" data-z="0"><h1 id="interface-with-apiserver-kubectl-command">Interface with apiserver - kubectl command</h1><p>To view running pods:</p><pre class="highlight code bash">kubectl get po</pre><p>To create a pod:</p><pre class="highlight code bash">kubectl create -f single-pod.yaml</pre><p>To delete a pod:</p><pre class="highlight code bash">kubectl delete -f single-pod.yaml</pre></div><div class="step step-level-1" step="20" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="14400" data-y="3000" data-z="0"><h1 id="replication-controller">Replication Controller</h1><p>You can specify how many instances of your pod you need</p><pre class="highlight code bash">apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx
+spec:
+  replicas: 2
+  selector:
+    app: nginx
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80</pre></div><div class="step step-level-1" step="21" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="16000" data-y="3000" data-z="0"><h1 id="replication-controller-example">Replication controller - example</h1><p>To view running rc:</p><pre class="highlight code bash">kubectl get rc</pre><p>To create a replication controller:</p><pre class="highlight code bash">kubectl create -f replication-controller-sample.yaml</pre><p>To delete a replication controller:</p><pre class="highlight code bash">kubectl delete -f replication-controller-sample.yaml</pre><p>And ... how to scale it:</p><pre class="highlight code bash">kubectl scale --replicas<span class="o">=</span><span class="m">1</span> -f replication-controller-sample.yaml</pre></div><div class="step step-level-1" step="22" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="17600" data-y="3000" data-z="0"><h1 id="service">Service</h1><p>Is the way to link pods together</p><p>Service can be also used to expose ports to external world.</p><pre class="highlight code bash">apiVersion: v1
+kind: Service
+metadata:
+  name: reverse-proxy-service
+  labels:
+    app: nginx
+    role: demo
+spec:
+  selector:
+    app: nginx
+    role: demo
+  ports:
+    - port: 80
+      name: reverse-http-port
+  type: LoadBalancer
+  loadBalancerIP: &lt;STATIC-IP-FROM-GOOGLE&gt;</pre></div><div class="step step-level-1" step="23" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="19200" data-y="3000" data-z="0"><h1 id="namespace">Namespace</h1><p>You can group all this stuff together so you can have parallel environments with the same configuration with no conflicts</p><pre class="highlight code bash">apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo</pre></div><div class="step step-level-1" step="24" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-scale="1" data-x="20800" data-y="3000" data-z="0"><h1 id="questions">Questions</h1></div><div class="step step-level-1" step="25" data-x="12600" data-z="1000" data-scale="10" data-rotate-x="45" data-rotate-y="0" data-rotate-z="0" data-y="3000"><p>Thanks ...</p></div></div><div id="hovercraft-help"><table><tr><th>Space</th><td>Forward</td></tr><tr><th>Right, Down, Page Down</th><td>Next slide</td></tr><tr><th>Left, Up, Page Up</th><td>Previous slide</td></tr><tr><th>P</th><td>Open presenter console</td></tr><tr><th>H</th><td>Toggle this help</td></tr></table></div><script type="text/javascript" src="js/impress.js"></script><script type="text/javascript" src="js/impressConsole.js"></script><script type="text/javascript" src="js/hovercraft.js"></script></body></html>
